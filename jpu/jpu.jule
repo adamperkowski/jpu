@@ -3,6 +3,157 @@
 // Use of this source code is governed by the BSD 3-Clause License.
 // See the LICENSE file for details.
 
-fn GetProton() {
-	println("Getting Proton...")
+#pass "-lcurl -lcrypto"
+
+use "std/conv"
+use "std/os"
+use "std/os/filepath"
+use ss "std/strings"
+
+cpp use "crypto.hpp"
+cpp use "fs.hpp"
+cpp use "request.hpp"
+
+const tempDir = "/tmp/jpu"
+const installDirHome = "/.steam/root/compatibilitytools.d/" // TODO !
+
+cpp fn get(str): str
+cpp fn download(str, str): bool
+cpp fn sha512sum(str): str
+cpp fn extractTarGz(str, str): bool
+
+struct Proton {
+	tagName:      str
+	downloadURLs: []str
+	protonDir:    str
+}
+
+impl Proton {
+	fn Download(self)! {
+		os::Dir.Create(tempDir) else {}
+
+		tempProtonFile := tempDir + "/" + self.tagName + ".tar.gz"
+		tempChecksumFile := tempDir + "/" + self.tagName + ".sha512sum"
+
+		if !cpp.download(self.downloadURLs[1], tempChecksumFile) {
+			error("Failed to download `" + self.downloadURLs[2] + "`")
+		}
+		if !cpp.download(self.downloadURLs[2], tempProtonFile) {
+			error("Failed to download `" + self.downloadURLs[2] + "`")
+		}
+
+		println("  Validating checksums...")
+		tempProtonContent := os::File.Read(tempProtonFile) else {
+			error("Failed to read `" + tempProtonFile + "`")
+		}
+		tempChecksumContent := os::File.Read(tempChecksumFile) else {
+			error("Failed to read `" + tempChecksumFile + "`")
+		}
+
+		checksum := cpp.sha512sum(str(tempProtonContent))
+
+		if !ss::Contains(str(tempChecksumContent), checksum) {
+			cleanup([tempProtonFile, tempChecksumFile])
+			error("Checksum mismatch")
+		}
+	}
+
+	fn Install(self)! {
+		tempProtonFile := tempDir + "/" + self.tagName + ".tar.gz"
+		tempChecksumFile := tempDir + "/" + self.tagName + ".sha512sum"
+
+		if !cpp.extractTarGz(tempProtonFile, filepath::Dir(self.protonDir)) {
+			cleanup([tempProtonFile, tempChecksumFile])
+			error("Failed to extract `" + tempProtonFile + "`")
+		}
+
+		cleanup([tempProtonFile, tempChecksumFile])
+	}
+}
+
+fn GetProton(tagRaw: str, urlRaw: str)!: Proton {
+	mut tag := ""
+
+	if tagRaw == "" {
+		tag = "/latest"
+	} else {
+		tag = "/tags/" + tagRaw
+	}
+
+	url := urlRaw + tag
+	data := cpp.get(url)
+
+	tags := getJSONValueN(data, "tag_name", 1) else {
+		error(error)
+	}
+	mut downloadURLs := getJSONValueN(data, "browser_download_url", 2) else {
+		error(error)
+	}
+	downloadSizes := getJSONValueN(data, "size", 2) else {
+		error(error)
+	}
+	releaseDate := getJSONValueN(data, "published_at", 1) else {
+		error(error)
+	}
+	tagName := tags[1]
+	downloadSize := conv::Atoi(downloadSizes[2])!
+	publishedAt := ss::Replace(ss::Replace(releaseDate[1], "T", " ", 1), "Z", "", 1)
+
+	home := os::Getenv("HOME")
+	if home == "" {
+		error("`$HOME` environment variable not set")
+	}
+
+	protonDir := home + installDirHome + tagName
+
+	println("  Ready to download " + tagName)
+	print("    Size: ")
+	print(downloadSize / 1048576)
+	println(" MB\n    Date: " + publishedAt)
+	print("  Continue? [Y/n]: ")
+
+	input := os::Stdin().ReadLine()!
+	match ss::ToLower(input) {
+	| "n":
+		error("Aborted")
+	}
+
+	os::Dir.Read(protonDir) else {
+		ret Proton{tagName, downloadURLs, protonDir}
+	}
+
+	error(tagName + " is already installed")
+}
+
+fn getJSONValueN(data: str, key: str, n: int)!: []str {
+	if ss::Contains(data, key+`":`) == false {
+		error("Key `" + key + "` not found")
+	}
+
+	mut values := ss::SplitN(data, key+`":`, n+1)
+
+	for i, v in values {
+		if i == 0 {
+			values[i] = ""
+			continue
+		}
+
+		if values[i][0] == '"' || values[i][0] == ' ' && values[i][1] == '"' {
+			values[i] = ss::SplitN(v, `"`, 3)[1]
+		} else {
+			values[i] = ss::SplitN(v, `,`, 3)[0]
+		}
+	}
+
+	ret values
+}
+
+fn cleanup(additional: []str) {
+	println("  Cleaning up...")
+
+	for _, f in additional {
+		os::File.Remove(f) else {}
+	}
+
+	os::Dir.Remove(tempDir) else {}
 }

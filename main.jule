@@ -3,24 +3,58 @@
 // Use of this source code is governed by the BSD 3-Clause License.
 // See the LICENSE file for details.
 
-use "cliq/cliq"
-use "colorify"
+use cq "cliq/cliq"
+use cy "colorify"
 use "jpu"
 use "std/maps"
 use "std/slices"
+use "std/sys"
+
+const protonGeURL = "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases"
 
 static argMap: map[int][2]str = {}
-static infoMessage = colorify::Colorify("*", colorify::Style{
-	Foreground: colorify::Foreground.Blue,
-	Background: colorify::Background.Black,
+static successMessage = cy::Colorify("#", cy::Style{
+	Foreground: cy::Foreground.Green,
+	Background: cy::Background.Black,
+})
+static infoMessage = cy::Colorify("*", cy::Style{
+	Foreground: cy::Foreground.Blue,
+	Background: cy::Background.Black,
+})
+static errorMessage = cy::Colorify("!", cy::Style{
+	Foreground: cy::Foreground.Red,
+	Background: cy::Background.Black,
 })
 
 fn main() {
-	mut cliq := cliq::Init(argMap)
-	cliq.Parse(false)
+	mut cq := cq::Init(argMap)
+	cq.Parse(false)
 
-	if !slices::Contains(maps::Values(cliq.Res), true) {
+	if !slices::Contains(maps::Values(cq.Res), true) {
 		println(infoMessage + " No arguments provided. Assuming you want to update.")
-		jpu::GetProton()
+		update()
 	}
+}
+
+fn update() {
+	println(infoMessage + " Getting the latest Proton-GE release...")
+	proton := jpu::GetProton("", protonGeURL) else {
+		handleErr(error)
+		ret
+	}
+	println(infoMessage + " Downloading...")
+	proton.Download() else {
+		handleErr(error)
+	}
+	println(infoMessage + " Installing...")
+	proton.Install() else {
+		handleErr(error)
+	}
+	println(successMessage + " Done!")
+}
+
+fn handleErr(err: any) {
+	print(errorMessage + " ")
+	println(err)
+	sys::Exit(1)
 }
