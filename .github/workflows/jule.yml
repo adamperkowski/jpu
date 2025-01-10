@@ -1,0 +1,49 @@
+name: Jule CI
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  jule:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+
+      - name:  Install JuleC
+        run: |
+          mkdir julec
+          cd julec
+          bash <(curl -s https://raw.githubusercontent.com/julelang/julec-ir/main/compile-ir.sh)
+          echo "$(pwd)/jule-master/bin" >> $GITHUB_PATH
+          cd ..
+      - name: Install JuleFmt
+        run: |
+          git clone https://github.com/julelang/julefmt.git --depth=1
+          cd julefmt
+          mkdir -p bin
+          julec --opt-deadcode -o bin/julefmt ./src
+          echo "$(pwd)/bin" >> $GITHUB_PATH
+          cd ..
+
+      - name: Build
+        run: |
+          make
+      - name: Test
+        run: |
+          make test
+      - name: Format
+        run: |
+          make format
+
+      - name: Clean up
+        run: |
+          make clean
+          rm -rf julec julefmt
+
+      - name: Check formatting
+        run: |
+          git diff --quiet || { echo 'Please run `make format` and push the changes.' exit 1; }

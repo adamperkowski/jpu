@@ -1,0 +1,6 @@
+[submodule "cliq"]
+	path = cliq
+	url = https://github.com/adamperkowski/cliq.git
+[submodule "colorify"]
+	path = colorify
+	url = https://github.com/lareii/colorify.git

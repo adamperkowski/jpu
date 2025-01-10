@@ -1,0 +1,8 @@
+// jpu API
+// Copyright 2025 Adam Perkowski.
+// Use of this source code is governed by the BSD 3-Clause License.
+// See the LICENSE file for details.
+
+fn GetProton() {
+	println("Getting Proton...")
+}
