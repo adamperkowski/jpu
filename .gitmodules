@@ -4,3 +4,6 @@
 [submodule "colorify"]
 	path = colorify
 	url = https://github.com/lareii/colorify.git
+[submodule "snapbox"]
+	path = snapbox
+	url = https://github.com/adamperkowski/snapbox.git
