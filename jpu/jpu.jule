@@ -13,8 +13,8 @@ use "std/os"
 use "std/os/filepath"
 use ss "std/strings"
 
-cpp use "crypto.hpp"
-cpp use "fs.hpp"
+cpp use "crypto.h"
+cpp use "fs.h"
 
 const tempDir = "/tmp/jpu"
 const installDirHome = "/.steam/root/compatibilitytools.d/" // TODO !

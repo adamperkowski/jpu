@@ -3,8 +3,8 @@
 // Use of this source code is governed by the BSD 3-Clause License.
 // See the LICENSE file for details.
 
-#ifndef FS_HPP
-#define FS_HPP
+#ifndef FS_H
+#define FS_H
 
 #include <string>
 
@@ -13,4 +13,4 @@ bool extractTarGz(const std::string& filename, const std::string& outputDir) {
     return system(cmd.c_str()) == 0;
 }
 
-#endif // FS_HPP
+#endif // FS_H
