@@ -17,7 +17,6 @@ cpp use "crypto.h"
 cpp use "fs.h"
 
 const tempDir = "/tmp/jpu"
-const installDirHome = "/.steam/root/compatibilitytools.d/" // TODO !
 
 static headerMap: sbh::HeaderMap = {
 	sbh::ACCEPT: "application/vnd.github+json",
@@ -77,7 +76,7 @@ impl Proton {
 	}
 }
 
-fn GetProton(tagRaw: str, urlRaw: str)!: Proton {
+fn GetProton(tagRaw: str, urlRaw: str, mut installDir: str)!: Proton {
 	mut tag := ""
 
 	if tagRaw == "" {
@@ -111,12 +110,19 @@ fn GetProton(tagRaw: str, urlRaw: str)!: Proton {
 	downloadSize := conv::Atoi(downloadSizes[2])!
 	publishedAt := ss::Replace(ss::Replace(releaseDate[1], "T", " ", 1), "Z", "", 1)
 
-	home := os::Getenv("HOME")
-	if home == "" {
-		error("`$HOME` environment variable not set")
+	if ss::HasPrefix(installDir, "~") {
+		home := os::Getenv("HOME")
+		if home == "" {
+			error("`$HOME` environment variable not set")
+		}
+		installDir = ss::Replace(installDir, "~", home, 1)
 	}
 
-	protonDir := home + installDirHome + tagName
+	if !ss::HasSuffix(installDir, "/") {
+		installDir += "/"
+	}
+
+	protonDir := installDir + tagName
 
 	println("  Ready to download " + tagName)
 	print("    Size: ")
