@@ -4,9 +4,11 @@ A lightweight and fast tool for installing, updating and managing [Proton], [Pro
 jpu is written in [Jule], a low-level, compiled, memory-safe fast programming language.<br>
 The tool's main goal is to provide a **faster** [ProtonUp] implementation. The original project is written in Python, which is quite slow.
 
-> [!CAUTION]
-> jpu is proof-of-concept and a WIP for now.
-> Please don't run it unless you audited the codebase and are fine with how bad the code is ;)
+Supported Jule versions:
+- `0.1.2` \*
+- `0.1.3@master`
+
+<sub>\* Some commands may not work or give unexpected results.</sub>
 
 ## Installation
 
