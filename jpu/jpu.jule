@@ -14,7 +14,6 @@ use "std/os/filepath"
 use ss "std/strings"
 
 cpp use "crypto.h"
-cpp use "fs.h"
 
 const tempDir = "/tmp/jpu"
 
@@ -25,7 +24,6 @@ static headerMap: sbh::HeaderMap = {
 }
 
 cpp fn sha512sum(str): str
-cpp fn extractTarGz(str, str): bool
 
 struct Proton {
 	tagName:      str
@@ -40,11 +38,14 @@ impl Proton {
 		tempProtonFile := tempDir + "/" + self.tagName + ".tar.gz"
 		tempChecksumFile := tempDir + "/" + self.tagName + ".sha512sum"
 
-		sbx::Download(self.downloadURLs[1], tempChecksumFile) else {
-			error("Failed to download `" + self.downloadURLs[2] + "`")
+		tempProtonURL := self.downloadURLs[2]
+		tempChecksumURL := self.downloadURLs[1]
+
+		sbx::Download(tempChecksumURL, tempChecksumFile) else {
+			error("Failed to download `" + tempChecksumURL + "`")
 		}
-		sbx::Download(self.downloadURLs[2], tempProtonFile) else {
-			error("Failed to download `" + self.downloadURLs[2] + "`")
+		sbx::Download(tempProtonURL, tempProtonFile) else {
+			error("Failed to download `" + tempProtonURL + "`")
 		}
 
 		println("  Validating checksums...")
@@ -67,7 +68,7 @@ impl Proton {
 		tempProtonFile := tempDir + "/" + self.tagName + ".tar.gz"
 		tempChecksumFile := tempDir + "/" + self.tagName + ".sha512sum"
 
-		if !cpp.extractTarGz(tempProtonFile, filepath::Dir(self.protonDir)) {
+		extractTarGz(tempProtonFile, filepath::Dir(self.protonDir)) else {
 			cleanup([tempProtonFile, tempChecksumFile])
 			error("Failed to extract `" + tempProtonFile + "`")
 		}
@@ -164,6 +165,22 @@ fn getJSONValueN(data: str, key: str, n: int)!: []str {
 	}
 
 	ret values
+}
+
+fn extractTarGz(file: str, dir: str)! {
+	os::Dir.Create(dir) else {
+		error(error)
+	}
+
+	mut cmd := os::Cmd.New("tar")
+	cmd.Args = ["-xzf", file, "-C", dir]
+
+	cmd.Spawn() else {
+		error(error)
+	}
+	cmd.Wait() else {
+		error(error)
+	}
 }
 
 fn cleanup(additional: []str) {

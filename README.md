@@ -24,7 +24,14 @@ sudo mv jpu /usr/bin
 ```
 
 ## Usage
-Documentation WIP...
+To install the latest [Proton-GE] version, simply run:
+```sh
+jpu
+```
+
+Available arguments:
+- `--dir`: Set the target installation directory (default: `~/.steam/root/compatibilitytools.d/`)
+- `--help`: Display CLI information
 
 ## Building from source
 To build jpu from source, you need to have the JuleC compiler (and [make]) installed. Please refer to [Jule's Manual][julec_installation].<br>
