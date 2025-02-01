@@ -63,3 +63,7 @@ fn handleErr(err: any) {
 	println(err)
 	sys::Exit(1)
 }
+
+fn ok() {
+   println("ok")
+}
