@@ -6,7 +6,8 @@ The tool's main goal is to provide a **faster** [ProtonUp] implementation. The o
 
 Supported Jule versions:
 - `0.1.2` \*
-- `0.1.3@master`
+- `0.1.3`
+- `0.1.4@master`
 
 <sub>\* Some commands may not work or give unexpected results.</sub>
 
