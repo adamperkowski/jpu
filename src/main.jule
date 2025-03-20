@@ -3,9 +3,10 @@
 // Use of this source code is governed by the BSD 3-Clause License.
 // See the LICENSE file for details.
 
-use cq "cliq"
 use cy "colorify"
-use "jpu"
+use "std/flag"
+use "std/os"
+use ss "std/strings"
 use "std/sys"
 
 const protonGeURL = "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases"
@@ -26,24 +27,31 @@ static errorMessage = cy::Colorify("!", cy::Style{
 })
 
 fn main() {
-	mut cq := cq::Builder{
-		Args: {
-			"dir": defaultInstallDir,
-		},
-	}.Help().Build()
+	mut fs := flag::FlagSet.New()
 
-	cq.GetCLI()
-	cq.Parse()
+	let mut dir: str
+	let mut help: bool
 
-	mut dir := str(cq.Get("dir"))
+	fs.AddVar[str](unsafe { (&str)(&dir) }, "dir", 'd', "Set target installation directory")
+	fs.AddVar[bool](unsafe { (&bool)(&help) }, "help", 'h', "Show this help message")
 
-	println(infoMessage + " No arguments provided. Assuming you want to update.")
+	fs.Parse(os::Args()[1:]) else {
+		handleErr("Failed to parse flags")
+		ret
+	}
+
+	if help {
+		println(autoHelp(fs))
+		ret
+	}
+
+	println(infoMessage + " No arguments provided. Assuming an update.")
 	update(dir)
 }
 
 fn update(mut installDir: str) {
 	println(infoMessage + " Getting the latest Proton-GE release...")
-	proton := jpu::GetProton("", protonGeURL, installDir) else {
+	proton := GetProton("", protonGeURL, installDir) else {
 		handleErr(error)
 		ret
 	}
@@ -62,4 +70,20 @@ fn handleErr(err: any) {
 	print(errorMessage + " ")
 	println(err)
 	sys::Exit(1)
+}
+
+fn autoHelp(mut flags: &flag::FlagSet): (res: str) {
+	mut maxWidth := 0
+	for _, f in flags.Flags() {
+		if len(f.Name()) > maxWidth {
+			maxWidth = len(f.Name())
+		}
+	}
+
+	res = "Usage: jpu [flags]\n\nFlags:\n"
+	for _, f in flags.Flags() {
+		res += "   --" + f.Name() + ss::Repeat(" ", maxWidth-len(f.Name())) + "   " + f.What() + "\n"
+	}
+
+	ret res
 }
