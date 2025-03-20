@@ -33,7 +33,7 @@ struct Proton {
 
 impl Proton {
 	fn Download(self)! {
-		os::Dir.Create(tempDir) else {}
+		os::Mkdir(tempDir) else {}
 
 		tempProtonFile := tempDir + "/" + self.tagName + ".tar.gz"
 		tempChecksumFile := tempDir + "/" + self.tagName + ".sha512sum"
@@ -49,10 +49,10 @@ impl Proton {
 		}
 
 		println("  Validating checksums...")
-		tempProtonContent := os::File.Read(tempProtonFile) else {
+		tempProtonContent := os::ReadFile(tempProtonFile) else {
 			error("Failed to read `" + tempProtonFile + "`")
 		}
-		tempChecksumContent := os::File.Read(tempChecksumFile) else {
+		tempChecksumContent := os::ReadFile(tempChecksumFile) else {
 			error("Failed to read `" + tempChecksumFile + "`")
 		}
 
@@ -137,7 +137,7 @@ fn GetProton(tagRaw: str, urlRaw: str, mut installDir: str)!: Proton {
 		error("Aborted")
 	}
 
-	os::Dir.Read(protonDir) else {
+	os::ReadDir(protonDir) else {
 		ret Proton{tagName, downloadURLs, protonDir}
 	}
 
@@ -168,17 +168,14 @@ fn getJSONValueN(data: str, key: str, n: int)!: []str {
 }
 
 fn extractTarGz(file: str, dir: str)! {
-	os::Dir.Create(dir) else {
+	os::Mkdir(dir) else {
 		error(error)
 	}
 
 	mut cmd := os::Cmd.New("tar")
 	cmd.Args = ["-xzf", file, "-C", dir]
 
-	cmd.Spawn() else {
-		error(error)
-	}
-	cmd.Wait() else {
+	cmd.Run() else {
 		error(error)
 	}
 }
@@ -187,8 +184,8 @@ fn cleanup(additional: []str) {
 	println("  Cleaning up...")
 
 	for _, f in additional {
-		os::File.Remove(f) else {}
+		os::Remove(f) else {}
 	}
 
-	os::Dir.Remove(tempDir) else {}
+	os::Rmdir(tempDir) else {}
 }

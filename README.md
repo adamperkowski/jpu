@@ -5,10 +5,8 @@ jpu is written in [Jule], a low-level, compiled, memory-safe fast programming la
 The tool's main goal is to provide a **faster** [ProtonUp] implementation. The original project is written in Python, which is quite slow.
 
 Supported Jule versions:
-- `0.1.2` \*
-- `0.1.3@master`
-
-<sub>\* Some commands may not work or give unexpected results.</sub>
+- `0.1.4`
+- `0.1.5@master`
 
 ## Installation
 
@@ -32,8 +30,8 @@ jpu
 ```
 
 Available arguments:
-- `--dir`: Set the target installation directory (default: `~/.steam/root/compatibilitytools.d/`)
-- `--help`: Display CLI information
+- `--dir` (`-d`): Set the target installation directory (default: `~/.steam/root/compatibilitytools.d/`)
+- `--help` (`-h`): Display CLI information
 
 ## Building from source
 To build jpu from source, you need to have the JuleC compiler (and [make]) installed. Please refer to [Jule's Manual][julec_installation].<br>

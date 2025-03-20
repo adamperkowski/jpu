@@ -13,18 +13,18 @@ all: build
 
 build:
 	mkdir -p build
-	$(JULEC) $(JULECFLAGS) .
+	$(JULEC) $(JULECFLAGS) src
 
 run: build
 	./build/$(BINARY)
 
 test:
-	$(JULEC) test .
+	$(JULEC) test src
 
 format:
-	julefmt -w .
+	julefmt -w src
 
 clean:
-	rm -rf bin dist
+	rm -rf build bin dist
 
 .PHONY: all build run test format clean
