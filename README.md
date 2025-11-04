@@ -12,6 +12,36 @@ The tool's main goal is to provide a **faster** [ProtonUp] implementation. The o
 paru -S jpu
 ```
 
+### Nix
+There is a [flake] available for jpu. You can run it directly with:
+```sh
+nix run 'github:adamperkowski/jpu?submodules=1'
+```
+or install it by adding the following to your system's `flake.nix`:
+```nix
+{
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    jpu = {
+      url = "github:adamperkowski/jpu";
+      submodules = true;
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+
+  outputs = { self, nixpkgs, jpu }: {
+    nixosConfigurations.example = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      modules = [{
+        environment.systemPackages = [
+          inputs.jpu.packages.x86_64-linux.default
+        ];
+      }];
+    };
+  };
+}
+```
+
 ### Manual
 You can either download the pre-built binaries from [GitHub releases](https://github.com/adamperkowski/jpu/releases) or [build from source](#building-from-source).<br>
 With the binary downloaded, you can move it to a directory in your `PATH` variable, e.g. `/usr/bin`:
@@ -52,4 +82,5 @@ The `jpu` binary will be located in the `build` directory.
 [Jule]: https://jule.dev
 [ProtonUp]: https://github.com/AUNaseef/protonup
 [make]: https://www.gnu.org/software/make
+[flake]: ./flake.nix
 [julec_installation]: https://manual.jule.dev/getting-started/installation/linux.html
