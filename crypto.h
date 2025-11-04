@@ -10,7 +10,7 @@
 #include <string.h>
 #include <openssl/evp.h>
 
-jule::Str sha512sum(const jule::Str input) {
+__jule_Str sha512sum(const __jule_Str input) {
     EVP_MD_CTX* ctx = EVP_MD_CTX_new();
     unsigned char hash[EVP_MAX_MD_SIZE];
     unsigned int length;
@@ -23,7 +23,7 @@ jule::Str sha512sum(const jule::Str input) {
 
     char* output = (char*)malloc((length * 2) + 1);
     if (output == NULL) {
-        return jule::Str();
+        return __jule_Str();
     }
 
     for (unsigned int i = 0; i < length; i++) {

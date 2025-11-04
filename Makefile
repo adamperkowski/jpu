@@ -13,13 +13,14 @@ all: build
 
 build:
 	mkdir -p build
-	$(JULEC) $(JULECFLAGS) src
+	$(JULEC) build src $(JULECFLAGS)
 
 run: build
 	./build/$(BINARY)
 
 test:
-	$(JULEC) test src
+	$(JULEC) test src $(JULECFLAGS)-test
+	./build/$(BINARY)-test
 
 format:
 	julefmt -w src

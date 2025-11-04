@@ -3,7 +3,7 @@
 // Use of this source code is governed by the BSD 3-Clause License.
 // See the LICENSE file for details.
 
-use cy "colorify"
+use cy "jpu/colorify"
 use "std/flag"
 use "std/os"
 use ss "std/strings"
@@ -11,20 +11,6 @@ use "std/sys"
 
 const protonGeURL = "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases"
 const defaultInstallDir = "~/.steam/root/compatibilitytools.d/"
-
-static argMap: map[int][2]str = {}
-static successMessage = cy::Colorify("#", cy::Style{
-	Foreground: cy::Foreground.Green,
-	Background: cy::Background.Black,
-})
-static infoMessage = cy::Colorify("*", cy::Style{
-	Foreground: cy::Foreground.Blue,
-	Background: cy::Background.Black,
-})
-static errorMessage = cy::Colorify("!", cy::Style{
-	Foreground: cy::Foreground.Red,
-	Background: cy::Background.Black,
-})
 
 fn main() {
 	mut fs := flag::FlagSet.New()
@@ -45,29 +31,29 @@ fn main() {
 		ret
 	}
 
-	println(infoMessage + " No arguments provided. Assuming an update.")
+	printInfo("No arguments provided. Assuming an update.")
 	update(dir)
 }
 
 fn update(mut installDir: str) {
-	println(infoMessage + " Getting the latest Proton-GE release...")
+	printInfo("Getting the latest Proton-GE release...")
 	proton := GetProton("", protonGeURL, installDir) else {
 		handleErr(error)
 		ret
 	}
-	println(infoMessage + " Downloading...")
+	printInfo("Downloading...")
 	proton.Download() else {
 		handleErr(error)
 	}
-	println(infoMessage + " Installing...")
+	printInfo("Installing...")
 	proton.Install() else {
 		handleErr(error)
 	}
-	println(successMessage + " Done!")
+	printSuccess("Done!")
 }
 
 fn handleErr(err: any) {
-	print(errorMessage + " ")
+	printError()
 	println(err)
 	sys::Exit(1)
 }
@@ -86,4 +72,23 @@ fn autoHelp(mut flags: &flag::FlagSet): (res: str) {
 	}
 
 	ret res
+}
+
+fn printSuccess(msg: str) {
+	println(cy::Colorify("#", cy::Style{
+		Foreground: cy::Foreground.Green,
+		Background: cy::Background.Black,
+	}) + " " + msg)
+}
+fn printInfo(msg: str) {
+	println(cy::Colorify("*", cy::Style{
+		Foreground: cy::Foreground.Blue,
+		Background: cy::Background.Black,
+	}) + " " + msg)
+}
+fn printError() {
+	println(cy::Colorify("!", cy::Style{
+		Foreground: cy::Foreground.Red,
+		Background: cy::Background.Black,
+	}) + " ")
 }

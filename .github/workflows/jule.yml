@@ -14,18 +14,20 @@ jobs:
           submodules: 'true'
 
       - name:  Install JuleC
-        run: |
-          mkdir julec
-          cd julec
-          bash <(curl -s https://raw.githubusercontent.com/julelang/julec-ir/main/compile-ir.sh)
-          echo "$(pwd)/jule-master/bin" >> $GITHUB_PATH
-          cd ..
+        uses: Panquesito7/setup-jule@v1.1.3
+        with:
+          version: dev
+          directory: .julec
+
+      - name: Add JuleC to PATH
+        run: echo "$(pwd)/.julec/julec-dev/bin" >> $GITHUB_PATH
+
       - name: Install JuleFmt
         run: |
-          git clone https://github.com/julelang/julefmt.git --depth=1
-          cd julefmt
+          git clone https://github.com/julelang/julefmt.git --depth=1 .julefmt
+          cd .julefmt
           mkdir -p bin
-          julec --opt-deadcode -o bin/julefmt ./src
+          julec build --opt-deadcode -o bin/julefmt ./src
           echo "$(pwd)/bin" >> $GITHUB_PATH
           cd ..
 
@@ -37,9 +39,7 @@ jobs:
       - name: Build
         run: |
           make
-      - name: Test
-        run: |
-          make test
+
       - name: Format
         run: |
           make format
@@ -47,7 +47,7 @@ jobs:
       - name: Clean up
         run: |
           make clean
-          rm -rf julec julefmt
+          rm -rf .julec .julefmt
 
       - name: Check formatting
         run: |

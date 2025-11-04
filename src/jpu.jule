@@ -3,25 +3,20 @@
 // Use of this source code is governed by the BSD 3-Clause License.
 // See the LICENSE file for details.
 
-#pass "-lcurl -lcrypto"
+#pass "-lcrypto"
 
-use sbx "snapbox"
-use sbh "snapbox/header"
-use sbs "snapbox/status"
+use sbx "jpu/snapbox"
+use sbh "jpu/snapbox/header"
+use sbs "jpu/snapbox/status"
+use "std/bufio"
 use "std/conv"
 use "std/os"
 use "std/os/filepath"
 use ss "std/strings"
 
-cpp use "crypto.h"
+cpp use "jpu/crypto.h"
 
 const tempDir = "/tmp/jpu"
-
-static headerMap: sbh::HeaderMap = {
-	sbh::ACCEPT: "application/vnd.github+json",
-	sbh::USER_AGENT: "jpu",
-	"X-GitHub-Api-Version": "2022-11-28",
-}
 
 cpp fn sha512sum(str): str
 
@@ -32,7 +27,7 @@ struct Proton {
 }
 
 impl Proton {
-	fn Download(self)! {
+	fn Download(*self)! {
 		os::Mkdir(tempDir) else {}
 
 		tempProtonFile := tempDir + "/" + self.tagName + ".tar.gz"
@@ -64,7 +59,7 @@ impl Proton {
 		}
 	}
 
-	fn Install(self)! {
+	fn Install(*self)! {
 		tempProtonFile := tempDir + "/" + self.tagName + ".tar.gz"
 		tempChecksumFile := tempDir + "/" + self.tagName + ".sha512sum"
 
@@ -84,6 +79,12 @@ fn GetProton(tagRaw: str, urlRaw: str, mut installDir: str)!: Proton {
 		tag = "/latest"
 	} else {
 		tag = "/tags/" + tagRaw
+	}
+
+	let headerMap: sbh::HeaderMap = {
+		sbh::ACCEPT: "application/vnd.github+json",
+		sbh::USER_AGENT: "jpu",
+		"X-GitHub-Api-Version": "2022-11-28",
 	}
 
 	url := urlRaw + tag
@@ -131,7 +132,12 @@ fn GetProton(tagRaw: str, urlRaw: str, mut installDir: str)!: Proton {
 	println(" MB\n    Date: " + publishedAt)
 	print("  Continue? [Y/n]: ")
 
-	input := os::Stdin().ReadLine()!
+	mut scanner := bufio::Scanner.New(os::Stdin())
+	scanner.Scan() else {
+		error("Failed to read input")
+	}
+	input := scanner.Text()
+
 	match ss::ToLower(input) {
 	| "n":
 		error("Aborted")
